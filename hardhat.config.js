@@ -1,8 +1,8 @@
 require("@nomiclabs/hardhat-waffle");
-require('hardhat-contract-sizer');
-require('@nomiclabs/hardhat-etherscan');
+require("hardhat-contract-sizer");
+require("@nomiclabs/hardhat-etherscan");
 
-require('dotenv').config();
+require("dotenv").config();
 
 // This is a sample Buidler task. To learn how to create your own go to
 // https://buidler.dev/guides/create-task.html
@@ -26,7 +26,7 @@ module.exports = {
   },
   // defaultNetwork: "hardhat",
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY
+    apiKey: process.env.ETHERSCAN_API_KEY,
   },
   networks: {
     hardhat: {
@@ -40,19 +40,25 @@ module.exports = {
       gasPrice: 1,
     },
     kovan: {
-      url: process.env.KOVAN_INFURA_URL ? process.env.KOVAN_INFURA_URL : '',
-      accounts: process.env.KOVAN_DEV_PRIVATE_KEY ? [`0x${process.env.KOVAN_DEV_PRIVATE_KEY}`] : [],
+      url: process.env.KOVAN_INFURA_URL ? process.env.KOVAN_INFURA_URL : "",
+      accounts: process.env.KOVAN_DEV_PRIVATE_KEY
+        ? [`0x${process.env.KOVAN_DEV_PRIVATE_KEY}`]
+        : [],
       gas: 8000000,
       gasLimit: 8000000,
       gasPrice: 31000000000,
     },
     fantom: {
-      url: 'https://rpcapi.fantom.network',
-      accounts: process.env.MAINNET_DEV_PRIVATE_KEY ? [`0x${process.env.MAINNET_DEV_PRIVATE_KEY}`] : [],
-    },    
+      url: "https://rpcapi.fantom.network",
+      accounts: process.env.MAINNET_DEV_PRIVATE_KEY
+        ? [`0x${process.env.MAINNET_DEV_PRIVATE_KEY}`]
+        : [],
+    },
     mainnet: {
-      url: process.env.MAINNET_INFURA_URL ? process.env.MAINNET_INFURA_URL : '',
-      accounts: process.env.MAINNET_DEV_PRIVATE_KEY ? [`0x${process.env.MAINNET_DEV_PRIVATE_KEY}`] : [],
+      url: process.env.MAINNET_INFURA_URL ? process.env.MAINNET_INFURA_URL : "",
+      accounts: process.env.MAINNET_DEV_PRIVATE_KEY
+        ? [`0x${process.env.MAINNET_DEV_PRIVATE_KEY}`]
+        : [],
       gasLimit: 8000000,
     },
   },
@@ -60,8 +66,8 @@ module.exports = {
     version: "0.8.0",
     settings: {
       optimizer: {
-        enabled: true
-      }
-    }
+        enabled: true,
+      },
+    },
   },
 };
