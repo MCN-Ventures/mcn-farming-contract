@@ -30,6 +30,7 @@ interface IBonusRewards {
     struct Pool {
         Bonus[] bonuses;
         uint256 lastUpdatedAt; // last accumulated bonus update timestamp
+        uint256 amount;
     }
 
     struct User {

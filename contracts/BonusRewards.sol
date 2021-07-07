@@ -20,14 +20,14 @@ contract BonusRewards is IBonusRewards, Ownable, ReentrancyGuard {
     uint256 private constant WEEK = 7 days;
     // help calculate rewards/bonus PerToken only. 1e12 will allow meaningful $1 deposit in a $1bn pool
     uint256 private constant CAL_MULTIPLIER = 1e30;
-    // use array to allow convinient replacement. Size of responders should be very small to 0 till a reputible responder multi-sig within DeFi or Yearn ecosystem is established
+    // use array to allow convenient replacement. Size of responders should be very small to 0 till a reputable responder multi-sig within DeFi or Yearn ecosystem is established
     address[] private responders;
     address[] private poolList;
     // lpToken => Pool
     mapping(address => Pool) private pools;
     // lpToken => User address => User data
     mapping(address => mapping(address => User)) private users;
-    // use array to allow convinient replacement. Size of Authorizers should be very small (one or two partner addresses for the pool and bonus)
+    // use array to allow convenient replacement. Size of Authorizers should be very small (one or two partner addresses for the pool and bonus)
     // lpToken => bonus token => [] allowed authorizers to add bonus tokens
     mapping(address => mapping(address => address[]))
         private allowedTokenAuthorizers;
@@ -80,6 +80,7 @@ contract BonusRewards is IBonusRewards, Ownable, ReentrancyGuard {
         uint256 received = token.balanceOf(address(this)) - balanceBefore;
 
         user.amount = user.amount + received;
+        pools[_lpToken].amount = pools[_lpToken].amount + received;
         _updateUserWriteoffs(_lpToken);
         emit Deposit(msg.sender, _lpToken, received);
     }
@@ -101,6 +102,7 @@ contract BonusRewards is IBonusRewards, Ownable, ReentrancyGuard {
         _claimRewards(_lpToken, user);
         uint256 amount = user.amount > _amount ? _amount : user.amount;
         user.amount = user.amount - amount;
+        pools[_lpToken].amount = pools[_lpToken].amount - amount;
         _updateUserWriteoffs(_lpToken);
 
         _safeTransfer(_lpToken, amount);
@@ -117,6 +119,7 @@ contract BonusRewards is IBonusRewards, Ownable, ReentrancyGuard {
             User storage user = users[_lpTokens[i]][msg.sender];
             uint256 amount = user.amount;
             user.amount = 0;
+            pools[_lpTokens[i]].amount = pools[_lpTokens[i]].amount - amount;
             _safeTransfer(_lpTokens[i], amount);
             emit Withdraw(msg.sender, _lpTokens[i], amount);
         }
@@ -297,10 +300,6 @@ contract BonusRewards is IBonusRewards, Ownable, ReentrancyGuard {
             // add bonus tokens and their authorizers (who are allowed to add the token to pool)
             for (uint256 j = 0; j < _bonusTokenAddrs.length; j++) {
                 address _bonusTokenAddr = _bonusTokenAddrs[j];
-                require(
-                    pools[_bonusTokenAddr].lastUpdatedAt == 0,
-                    "BonusRewards: lpToken, not allowed"
-                );
                 allowedTokenAuthorizers[_lpToken][
                     _bonusTokenAddr
                 ] = _authorizers;
@@ -406,7 +405,7 @@ contract BonusRewards is IBonusRewards, Ownable, ReentrancyGuard {
         for (uint256 i = 0; i < rewards.length; i++) {
             Bonus memory bonus = pool.bonuses[i];
             if (bonus.startTime < block.timestamp && bonus.remBonus > 0) {
-                uint256 lpTotal = IERC20(_lpToken).balanceOf(address(this));
+                uint256 lpTotal = pool.amount;
                 uint256 bonusForTime = _calRewardsForTime(
                     bonus,
                     pool.lastUpdatedAt
@@ -437,7 +436,7 @@ contract BonusRewards is IBonusRewards, Ownable, ReentrancyGuard {
         if (poolLastUpdatedAt == 0 || block.timestamp <= poolLastUpdatedAt)
             return;
         pool.lastUpdatedAt = block.timestamp;
-        uint256 lpTotal = IERC20(_lpToken).balanceOf(address(this));
+        uint256 lpTotal = pool.amount;
         if (lpTotal == 0) return;
 
         for (uint256 i = 0; i < pool.bonuses.length; i++) {
@@ -476,7 +475,7 @@ contract BonusRewards is IBonusRewards, Ownable, ReentrancyGuard {
         }
     }
 
-    /// @notice tranfer upto what the contract has
+    /// @notice transfer upto what the contract has
     function _safeTransfer(address _token, uint256 _amount)
         private
         returns (uint256 _transferred)
